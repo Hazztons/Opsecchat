@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>Opsec Chat</title>
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+	<style>
+		:root{
+			--bg:#050607;
+			--panel:#0b0c10;
+			--accent:#00f0ff;
+			--accent-2:#9d5cff;
+			--muted:#9aa0a6;
+			--glass: rgba(255,255,255,0.03);
+		}
+		*{box-sizing:border-box}
+		html,body{height:100%}
+		body{
+			margin:0;
+			font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
+			background:radial-gradient(1200px 600px at 10% 10%, rgba(157,92,255,0.08), transparent),
+								 radial-gradient(900px 400px at 90% 80%, rgba(0,240,255,0.06), transparent),
+								 var(--bg);
+			color:#e6eef6;
+			-webkit-font-smoothing:antialiased;
+			-moz-osx-font-smoothing:grayscale;
+			display:flex;align-items:center;justify-content:center;padding:32px;
+		}
+		.card{
+			width:100%;max-width:1100px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+			box-shadow: 0 8px 40px rgba(2,6,23,0.7);display:grid;grid-template-columns:420px 1fr;overflow:hidden;border:1px solid rgba(255,255,255,0.03);
+		}
+		.left{
+			padding:36px;background:linear-gradient(180deg, rgba(10,10,12,0.6), rgba(6,6,8,0.6));
+			border-right:1px solid rgba(255,255,255,0.02);
+			display:flex;flex-direction:column;gap:18px;align-items:flex-start;
+		}
+		.logo{
+			font-family:Orbitron,monospace;font-weight:700;letter-spacing:1px;color:var(--accent);font-size:20px;
+			display:flex;gap:10px;align-items:center;
+		}
+		.subtitle{color:var(--muted);font-size:13px}
+		.tabs{display:flex;gap:8px;margin-top:8px}
+		.tab{padding:10px 16px;border-radius:10px;background:transparent;border:1px solid transparent;color:var(--muted);cursor:pointer}
+		.tab.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#061018;font-weight:600}
+		form{width:100%;margin-top:6px;display:flex;flex-direction:column;gap:12px}
+		label{font-size:13px;color:var(--muted)}
+		input{background:var(--glass);border:1px solid rgba(255,255,255,0.03);padding:12px;border-radius:10px;color:inherit;outline:none}
+		.btn{padding:12px;border-radius:10px;border:0;cursor:pointer;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#031017;font-weight:600}
+		.muted{font-size:12px;color:var(--muted)}
+
+		/* Chat area */
+		.right{padding:20px;background:linear-gradient(180deg, rgba(4,6,10,0.6), rgba(3,4,6,0.6));display:flex;flex-direction:column;gap:12px}
+		.chat-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02)}
+		.chat-main{display:flex;gap:16px;flex:1;overflow:hidden}
+		.messages{flex:1;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);overflow:auto;display:flex;flex-direction:column;gap:12px}
+		.sidebar{width:220px;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border:1px solid rgba(255,255,255,0.02);display:flex;flex-direction:column;gap:8px}
+		.message{max-width:70%;padding:10px;border-radius:10px;background:linear-gradient(90deg, rgba(0,240,255,0.06), rgba(157,92,255,0.04));backdrop-filter:blur(4px);}
+		.message.me{align-self:flex-end;background:linear-gradient(90deg, rgba(0,240,255,0.14), rgba(157,92,255,0.1));}
+		.message .meta{font-size:11px;color:var(--muted);margin-bottom:6px}
+		.composer{display:flex;gap:8px;padding-top:8px}
+		.composer input{flex:1}
+		.online-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:8px;box-shadow:0 0 8px rgba(0,240,255,0.12)}
+
+		.note{font-size:12px;color:var(--muted);margin-top:6px}
+		footer{font-size:12px;color:var(--muted);padding:10px;text-align:center}
+
+		@media(max-width:880px){.card{grid-template-columns:1fr;max-width:920px}.left{order:2}.right{order:1}}
+	</style>
+</head>
+<body>
+	<div class="card">
+		<div class="left">
+			<div class="logo">OPSEC CHAT <span style="font-size:10px;color:var(--muted);margin-left:6px">BY HAROON.</span></div>
+			<div class="subtitle">A Chatting system Where Privacy is the Number one priority.</div>
+
+			<div style="width:100%">
+				<div class="tabs">
+					<button class="tab active" id="tab-login">Login</button>
+					<button class="tab" id="tab-signup">Sign Up</button>
+				</div>
+
+				<form id="form-login" autocomplete="off">
+					<label>Username</label>
+					<input id="login-username" required />
+					<label>Password</label>
+					<input id="login-password" type="password" required />
+					<div style="display:flex;gap:8px;align-items:center">
+						<button class="btn" type="submit">Sign in</button>
+						<div class="muted">or create an account</div>
+					</div>
+				</form>
+
+				<form id="form-signup" style="display:none" autocomplete="off">
+					<label>Choose username</label>
+					<input id="signup-username" required />
+					<label>Create password</label>
+					<input id="signup-password" type="password" required />
+					<label>Confirm password</label>
+					<input id="signup-password2" type="password" required />
+					<div style="display:flex;gap:8px;align-items:center">
+						<button class="btn" type="submit">Create account</button>
+						<div class="muted">Securely stored in this browser</div>
+					</div>
+				</form>
+			</div>
+
+			<div class="note">This is a local demo. Open multiple tabs to simulate other users.</div>
+			<footer>Built with modern browser APIs • No server required</footer>
+		</div>
+
+		<div class="right">
+			<div class="chat-header">
+				<div>
+					<div style="font-family:Orbitron,monospace;font-weight:700">OPSEC CHAT</div>
+					<div class="muted" id="welcome">Please sign in to join the conversation</div>
+				</div>
+				<div style="display:flex;align-items:center;gap:12px">
+					<div style="position:relative">
+						<input id="search-input" placeholder="Search users to add friend..." style="padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;outline:none;width:260px" />
+						<div id="search-results" style="position:absolute;right:0;top:40px;background:var(--panel);border:1px solid rgba(255,255,255,0.03);border-radius:8px;padding:8px;display:none;min-width:220px;z-index:30"></div>
+					</div>
+					<button class="btn" id="btn-logout" style="display:none">Logout</button>
+				</div>
+			</div>
+
+			<div class="chat-main">
+				<div class="messages" id="messages" aria-live="polite"></div>
+				<div class="sidebar">
+					<div style="font-weight:600">Online</div>
+					<div id="online-list" class="muted">—</div>
+					<div style="height:1px;background:rgba(255,255,255,0.02);margin:8px 0"></div>
+					<div style="font-weight:600">Friends</div>
+					<div id="friends-list" class="muted">—</div>
+					<div style="height:1px;background:rgba(255,255,255,0.02);margin:8px 0"></div>
+					<div style="font-weight:600">Requests</div>
+					<div id="friend-requests" class="muted">—</div>
+					<div style="height:1px;background:rgba(255,255,255,0.02);margin:8px 0"></div>
+					<div style="font-weight:600">About</div>
+					<div class="muted">A Private Chatting Browser Where Your privacy Is the number one priority made by Haroon.</div>
+				</div>
+			</div>
+
+			<div class="composer">
+				<input id="msg-input" placeholder="Type a message..." disabled />
+				<button class="btn" id="send-btn" disabled>Send</button>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		// utility: SHA-256 hash to avoid storing plain passwords
+		async function sha256hex(str){
+			const enc = new TextEncoder();
+			const data = enc.encode(str);
+			const hash = await crypto.subtle.digest('SHA-256', data);
+			const bytes = new Uint8Array(hash);
+			return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('');
+		}
+
+		// --- crypto helpers for private message encryption (AES-GCM) ---
+		function b64Encode(buf){ return btoa(String.fromCharCode(...new Uint8Array(buf))); }
+		function b64Decode(b64){ const bin = atob(b64); const len = bin.length; const bytes = new Uint8Array(len); for(let i=0;i<len;i++) bytes[i]=bin.charCodeAt(i); return bytes.buffer; }
+
+		async function exportKeyToBase64(key){ const raw = await crypto.subtle.exportKey('raw', key); return b64Encode(raw); }
+		async function importRawKeyFromBase64(b64){ try{ const raw = b64Decode(b64); return await crypto.subtle.importKey('raw', raw, {name:'AES-GCM'}, false, ['encrypt','decrypt']); }catch(e){return null} }
+
+		async function generateAndStoreKeyForUser(username){
+			const key = await crypto.subtle.generateKey({name:'AES-GCM',length:256}, true, ['encrypt','decrypt']);
+			const b64 = await exportKeyToBase64(key);
+			localStorage.setItem('neo_key_' + username, b64);
+			return b64;
+		}
+
+		function getUserRawKeyBase64(username){ return localStorage.getItem('neo_key_' + username); }
+
+		async function importCurrentUserKey(){
+			if(!currentUser) return null;
+			const b64 = getUserRawKeyBase64(currentUser);
+			if(!b64) return null;
+			currentUserKey = await importRawKeyFromBase64(b64);
+			return currentUserKey;
+		}
+
+		async function encryptWithRawKeyBase64(b64raw, text){
+			if(!b64raw) throw new Error('No key');
+			const key = await importRawKeyFromBase64(b64raw);
+			const iv = crypto.getRandomValues(new Uint8Array(12));
+			const enc = new TextEncoder();
+			const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, enc.encode(text));
+			return {ct: b64Encode(ct), iv: b64Encode(iv)};
+		}
+
+		async function decryptForCurrentUser(msg){
+			// msg may be public (text) or private (encrypted map)
+			if(!msg.recipient) return msg.text || '';
+			if(!currentUserKey) return null;
+			try{
+				const encObj = (msg.encrypted || {})[currentUser];
+				if(!encObj) return null;
+				const iv = new Uint8Array(b64Decode(encObj.iv));
+				const ct = b64Decode(encObj.ct);
+				const plainBuf = await crypto.subtle.decrypt({name:'AES-GCM', iv}, currentUserKey, ct);
+				return new TextDecoder().decode(plainBuf);
+			}catch(e){return null}
+		}
+
+		let currentUserKey = null; // CryptoKey in memory for current logged in user
+
+		// storage helpers
+		function getUsers(){
+			try{return JSON.parse(localStorage.getItem('neo_users')||'{}')}catch(e){return{}}}
+		function saveUsers(u){localStorage.setItem('neo_users', JSON.stringify(u))}
+
+		async function createUser(username, password){
+			username = username.trim();
+			const users = getUsers();
+			if(!username) throw new Error('Invalid username');
+			if(users[username]) throw new Error('Username exists');
+			const ph = await sha256hex(password);
+			users[username] = {passwordHash:ph, created:Date.now()};
+			saveUsers(users);
+			// generate a per-user symmetric key for private message encryption
+			await generateAndStoreKeyForUser(username);
+			return true;
+		}
+
+		async function authUser(username, password){
+			const users = getUsers();
+			if(!users[username]) return false;
+			const ph = await sha256hex(password);
+			return users[username].passwordHash === ph;
+		}
+
+
+		// Chat sync: BroadcastChannel with localStorage fallback
+		const channelName = 'neochat_channel_v1';
+		let bc = null;
+		if('BroadcastChannel' in window){ try{ bc = new BroadcastChannel(channelName);}catch(e){bc=null} }
+
+		const messagesEl = document.getElementById('messages');
+		const onlineListEl = document.getElementById('online-list');
+		const welcomeEl = document.getElementById('welcome');
+		const msgInput = document.getElementById('msg-input');
+		const sendBtn = document.getElementById('send-btn');
+
+		// per-tab client id to avoid processing our own broadcasts
+		const clientId = 'cid_' + Date.now() + '_' + Math.random().toString(36).slice(2,9);
+
+		let currentUser = null;
+		let messages = JSON.parse(localStorage.getItem('neo_messages')||'[]');
+		function persistMessages(){ localStorage.setItem('neo_messages', JSON.stringify(messages)); }
+
+		async function renderMessages(){
+			messagesEl.innerHTML = '';
+			// filter messages based on currentChat (null means global)
+			for(const m of messages){
+				// determine visibility
+				let visible = false;
+				if(!currentChat){ // global chat: show only public messages
+					visible = !m.recipient;
+				} else {
+					// private chat view between currentUser and currentChat
+					visible = (
+						(m.user === currentUser && m.recipient === currentChat) ||
+						(m.user === currentChat && m.recipient === currentUser)
+					);
+				}
+				if(!visible) continue;
+				const div = document.createElement('div');
+				div.className = 'message' + (m.user===currentUser? ' me':'');
+				const meta = document.createElement('div'); meta.className='meta';
+				let plaintext = null;
+				if(m.recipient){
+					// private message: attempt to decrypt for current user
+					plaintext = await decryptForCurrentUser(m);
+					meta.textContent = m.user + ' → ' + m.recipient + ' • ' + new Date(m.ts).toLocaleTimeString();
+					if(plaintext === null){ // not decryptable in this client
+						const body = document.createElement('div'); body.textContent = 'Encrypted message';
+						div.appendChild(meta); div.appendChild(body);
+						messagesEl.appendChild(div); continue;
+					} else {
+						div.style.opacity = 0.95;
+						const badge = document.createElement('span'); badge.textContent = 'PRIVATE'; badge.style.fontSize='11px'; badge.style.marginLeft='8px'; badge.style.color='var(--muted)'; meta.appendChild(badge);
+					}
+				} else {
+					// public message
+					plaintext = m.text || '';
+					meta.textContent = m.user + ' • ' + new Date(m.ts).toLocaleTimeString();
+				}
+				const body = document.createElement('div'); body.textContent = plaintext;
+				div.appendChild(meta); div.appendChild(body);
+				messagesEl.appendChild(div);
+			}
+			messagesEl.scrollTop = messagesEl.scrollHeight;
+		}
+
+		function broadcast(obj){
+			try{
+				// attach sender client id so receivers (including this tab) can skip if needed
+				const payload = Object.assign({}, obj, {__cid: clientId});
+				if(bc) bc.postMessage(payload);
+				// also write a small latest push to localStorage to notify older browsers
+				localStorage.setItem('neo_last_push', JSON.stringify({t:Date.now(), payload}));
+			}catch(e){console.warn(e)}
+		}
+
+		// Friends storage per-user
+		function getFriends(username){
+			if(!username) return [];
+			try{return JSON.parse(localStorage.getItem('neo_friends_' + username) || '[]')}catch(e){return []}
+		}
+		function saveFriends(username, list){ if(!username) return; localStorage.setItem('neo_friends_' + username, JSON.stringify(list)); }
+		function renderFriends(){
+			const el = document.getElementById('friends-list');
+			el.innerHTML = '';
+			if(!currentUser){ el.textContent='—'; return; }
+			const list = getFriends(currentUser);
+			if(list.length===0) { el.textContent='No friends yet'; return; }
+			for(const f of list){
+				const d = document.createElement('div'); d.style.display='flex'; d.style.justifyContent='space-between'; d.style.alignItems='center'; d.style.padding='6px 4px';
+				const left = document.createElement('div'); left.style.display='flex'; left.style.alignItems='center';
+				const name = document.createElement('div'); name.textContent = f; name.style.cursor='pointer'; name.style.marginRight='8px'; name.addEventListener('click', ()=>{ openPrivateChat(f); });
+				const unread = getUnread(currentUser)[f] || 0;
+				if(unread>0){ const badge = document.createElement('span'); badge.textContent = unread; badge.style.background='var(--accent)'; badge.style.color='#021018'; badge.style.padding='4px 8px'; badge.style.borderRadius='999px'; badge.style.fontSize='12px'; badge.style.marginRight='8px'; left.appendChild(badge); }
+				left.appendChild(name);
+				const btn = document.createElement('button'); btn.textContent='Chat'; btn.className='btn'; btn.style.padding='6px 8px'; btn.addEventListener('click', ()=>{ openPrivateChat(f); clearUnread(currentUser, f); });
+				d.appendChild(left); d.appendChild(btn); el.appendChild(d);
+			}
+		}
+
+		function addFriend(username, friend){
+			if(!username || !friend) return false;
+			if(username === friend) return false;
+			const users = getUsers(); if(!users[friend]) return false; // only existing users
+			const list = getFriends(username);
+			if(list.includes(friend)) return false;
+			list.push(friend); saveFriends(username, list); renderFriends(); return true;
+		}
+
+		// friend requests: store per-recipient
+		function getFriendRequestsFor(username){
+			try{return JSON.parse(localStorage.getItem('neo_friend_requests_' + username) || '[]')}catch(e){return []}
+		}
+		function saveFriendRequestsFor(username, arr){ localStorage.setItem('neo_friend_requests_' + username, JSON.stringify(arr)); }
+		function sendFriendRequest(from, to){
+			if(!from || !to) return false;
+			if(from === to) return false;
+			const users = getUsers(); if(!users[to]) return false;
+			const reqs = getFriendRequestsFor(to);
+			if(reqs.find(r=>r.from===from)) return false;
+			reqs.push({from, ts: Date.now()}); saveFriendRequestsFor(to, reqs);
+			broadcast({type:'friend_request', from, to});
+			return true;
+		}
+
+		function renderFriendRequests(){
+			const el = document.getElementById('friend-requests'); el.innerHTML='';
+			if(!currentUser){ el.textContent='—'; return; }
+			const reqs = getFriendRequestsFor(currentUser);
+			if(reqs.length===0){ el.textContent='No requests'; return; }
+			for(const r of reqs){
+				const d = document.createElement('div'); d.style.display='flex'; d.style.justifyContent='space-between'; d.style.alignItems='center'; d.style.padding='6px 4px';
+				const name = document.createElement('div'); name.textContent = r.from;
+				const actions = document.createElement('div');
+				const accept = document.createElement('button'); accept.textContent='Accept'; accept.className='btn'; accept.style.marginRight='6px';
+				accept.addEventListener('click', ()=>{ addFriendMutual(currentUser, r.from); // remove request
+					const remaining = getFriendRequestsFor(currentUser).filter(x=>x.from!==r.from); saveFriendRequestsFor(currentUser, remaining); renderFriendRequests(); renderFriends(); });
+				const decline = document.createElement('button'); decline.textContent='Decline'; decline.className='btn'; decline.style.opacity='0.8'; decline.addEventListener('click', ()=>{ const remaining = getFriendRequestsFor(currentUser).filter(x=>x.from!==r.from); saveFriendRequestsFor(currentUser, remaining); renderFriendRequests(); });
+				actions.appendChild(accept); actions.appendChild(decline);
+				d.appendChild(name); d.appendChild(actions); el.appendChild(d);
+			}
+		}
+
+		function addFriendMutual(a,b){ if(!a||!b) return false; const listA = getFriends(a); if(!listA.includes(b)){ listA.push(b); saveFriends(a,listA);} const listB = getFriends(b); if(!listB.includes(a)){ listB.push(a); saveFriends(b,listB);} renderFriends(); }
+
+		// unread counts per-user
+		function getUnread(username){ try{return JSON.parse(localStorage.getItem('neo_unread_' + username) || '{}')}catch(e){return {}} }
+		function saveUnread(username, obj){ localStorage.setItem('neo_unread_' + username, JSON.stringify(obj)); }
+		function incrementUnread(username, partner){ if(!username||!partner) return; const u = getUnread(username); u[partner] = (u[partner]||0) + 1; saveUnread(username,u); renderFriends(); }
+		function clearUnread(username, partner){ if(!username||!partner) return; const u = getUnread(username); if(u[partner]){ delete u[partner]; saveUnread(username,u); renderFriends(); } }
+
+		let currentChat = null; // null = global, or username string for private chat
+		function openPrivateChat(friend){ currentChat = friend; welcomeEl.textContent = 'Private chat with ' + friend; renderMessages(); }
+
+		function handleIncoming(obj, originIsLocal=false){
+			if(!obj) return;
+			// ignore broadcasts that originated from this same tab
+			if(obj.__cid && obj.__cid === clientId) return;
+			if(obj.type === 'message'){
+				// avoid duplicates: check id
+				const incoming = obj.data;
+				if(!incoming || !incoming.id) return;
+				if(messages.find(m=>m.id === incoming.id)) return; // already have it
+				// save all messages but rendering will filter by currentChat/privacy
+				messages.push(incoming);
+				persistMessages();
+				// if private and recipient is currentUser, handle unread counts
+				if(incoming.recipient && incoming.recipient === currentUser){
+					// if not currently viewing that private chat then increment unread
+					if(currentChat !== incoming.user) incrementUnread(currentUser, incoming.user);
+				}
+				renderMessages().catch(()=>{});
+			} else if(obj.type === 'presence'){
+				// update presence store in localStorage
+				const p = JSON.parse(localStorage.getItem('neo_presence')||'{}');
+				p[obj.user] = Date.now();
+				localStorage.setItem('neo_presence', JSON.stringify(p));
+				renderPresence();
+			} else if(obj.type==='request-sync'){
+				// reply with full messages so newcomers get synced
+				if(currentUser) broadcast({type:'sync', data:messages});
+			} else if(obj.type==='sync'){
+				// merge messages
+				if(Array.isArray(obj.data)){
+					const ids = new Set(messages.map(m=>m.id));
+					for(const m of obj.data) if(!ids.has(m.id)) messages.push(m);
+					messages.sort((a,b)=>a.ts-b.ts);
+					persistMessages(); renderMessages();
+				}
+			}
+		}
+
+		if(bc){ bc.onmessage = (ev)=> handleIncoming(ev.data); }
+		window.addEventListener('storage', (ev)=>{
+			if(ev.key === 'neo_last_push' && ev.newValue){
+				try{ const v = JSON.parse(ev.newValue); if(v && v.payload) handleIncoming(v.payload, true); }catch(e){}
+			}
+			if(ev.key === 'neo_messages' && ev.newValue){
+				messages = JSON.parse(ev.newValue||'[]'); renderMessages().catch(()=>{});
+			}
+			// friend requests and unread / friends updates
+			if(ev.key && ev.key.startsWith('neo_friend_requests_')){ renderFriendRequests(); }
+			if(ev.key && ev.key.startsWith('neo_friends_')){ renderFriends(); }
+			if(ev.key && ev.key.startsWith('neo_unread_')){ renderFriends(); }
+		});
+
+		// presence rendering
+		function renderPresence(){
+			const p = JSON.parse(localStorage.getItem('neo_presence')||'{}');
+			const now = Date.now();
+			const online = [];
+			for(const [u,ts] of Object.entries(p)){
+				if(now - ts < 15000) online.push(u);
+			}
+			if(online.length===0) onlineListEl.textContent='—'; else{
+				onlineListEl.innerHTML = '';
+				for(const u of online){
+					const el = document.createElement('div');
+					el.innerHTML = `<span class='online-dot' style='background:${u===currentUser?"var(--accent)":"var(--accent-2)"}'></span>` + u;
+					onlineListEl.appendChild(el);
+				}
+			}
+		}
+
+		// periodically broadcast presence
+		function announcePresence(){ if(!currentUser) return; broadcast({type:'presence', user:currentUser}); }
+		setInterval(()=>{ announcePresence(); renderPresence(); },5000);
+
+		// UI bindings: tabs
+		const tabLogin = document.getElementById('tab-login');
+		const tabSignup = document.getElementById('tab-signup');
+		const formLogin = document.getElementById('form-login');
+		const formSignup = document.getElementById('form-signup');
+		tabLogin.addEventListener('click', ()=>{ tabLogin.classList.add('active'); tabSignup.classList.remove('active'); formLogin.style.display='flex'; formSignup.style.display='none'; });
+		tabSignup.addEventListener('click', ()=>{ tabSignup.classList.add('active'); tabLogin.classList.remove('active'); formSignup.style.display='flex'; formLogin.style.display='none'; });
+
+		// Signup flow
+	    formSignup.addEventListener('submit', async (e)=>{
+			e.preventDefault();
+			const u = document.getElementById('signup-username').value.trim();
+			const p = document.getElementById('signup-password').value;
+			const p2 = document.getElementById('signup-password2').value;
+			try{
+				if(p !== p2) throw new Error('Passwords do not match');
+					await createUser(u,p);
+				alert('Account created. You are now signed in.');
+					await doLogin(u);
+			}catch(err){ alert(err.message||err); }
+		});
+
+		// Login flow
+		formLogin.addEventListener('submit', async (e)=>{
+			e.preventDefault();
+			const u=document.getElementById('login-username').value.trim();
+			const p=document.getElementById('login-password').value;
+			const ok = await authUser(u,p);
+			if(ok) await doLogin(u); else alert('Invalid username or password');
+		});
+
+		async function doLogin(username){
+			currentUser = username;
+			// import crypto key for this user into memory
+			await importCurrentUserKey();
+			welcomeEl.textContent = 'Hello, ' + username;
+			document.getElementById('btn-logout').style.display='inline-block';
+			msgInput.disabled=false; sendBtn.disabled=false;
+			announcePresence(); broadcast({type:'request-sync', user:currentUser});
+			renderMessages().catch(()=>{});
+			renderPresence();
+			renderFriends(); renderFriendRequests();
+			// save last logged in user for convenience
+			localStorage.setItem('neo_last_user', username);
+		}
+
+		document.getElementById('btn-logout').addEventListener('click', ()=>{
+			currentUser=null; currentUserKey=null;
+			welcomeEl.textContent='Please sign in to join the conversation';
+			document.getElementById('btn-logout').style.display='none'; msgInput.disabled=true; sendBtn.disabled=true;
+			renderFriends(); renderFriendRequests();
+		});
+
+		// send message
+		sendBtn.addEventListener('click', sendMessage);
+		msgInput.addEventListener('keypress', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); sendMessage(); } });
+
+		async function sendMessage(){
+				const text = msgInput.value.trim(); if(!text || !currentUser) return;
+				const recipient = currentChat || null;
+				const id = 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+				if(!recipient){
+					// public message stored as plaintext
+					const msg = { id, user: currentUser, text, ts: Date.now(), recipient: null };
+					messages.push(msg); persistMessages(); renderMessages().catch(()=>{}); broadcast({type:'message', data:msg}); msgInput.value='';
+					return;
+				}
+				// private message: encrypt for sender and recipient (requires both keys present locally)
+				const senderKeyB64 = getUserRawKeyBase64(currentUser);
+				const recipKeyB64 = getUserRawKeyBase64(recipient);
+				if(!senderKeyB64 || !recipKeyB64){ alert('Cannot send encrypted private message: key missing (both users must exist in this browser instance).'); return; }
+				try{
+					const encForSender = await encryptWithRawKeyBase64(senderKeyB64, text);
+					const encForRecip = await encryptWithRawKeyBase64(recipKeyB64, text);
+					const msg = { id, user: currentUser, ts: Date.now(), recipient, encrypted: {} };
+					msg.encrypted[currentUser] = encForSender; msg.encrypted[recipient] = encForRecip;
+					messages.push(msg); persistMessages(); renderMessages().catch(()=>{}); broadcast({type:'message', data:msg}); msgInput.value='';
+					// if recipient is not viewing chat with sender, increment their unread counter
+					if(recipient){
+						// incrementUnread for recipient (we don't have recipient's UI here, but store it)
+						const unread = getUnread(recipient); unread[currentUser] = (unread[currentUser]||0)+1; saveUnread(recipient, unread);
+					}
+				}catch(e){ console.error(e); alert('Failed to encrypt message'); }
+			}
+
+		// initialize UI from storage
+		(function init(){
+			const last = localStorage.getItem('neo_last_user');
+			if(last){ document.getElementById('login-username').value = last; }
+			renderMessages().catch(()=>{});
+			// ask for sync in case other tabs have more
+			broadcast({type:'request-sync', user:last||null});
+			// also listen on BroadcastChannel for incoming
+			if(bc) bc.onmessage = ev => handleIncoming(ev.data);
+			// wire search / friend UI
+			document.getElementById('search-input').addEventListener('input', (e)=>{
+				const q = e.target.value.trim(); const out = document.getElementById('search-results');
+				if(!q){ out.style.display='none'; out.innerHTML=''; return; }
+				const users = Object.keys(getUsers());
+				const matches = users.filter(u=>u.toLowerCase().includes(q.toLowerCase()) && u !== currentUser).slice(0,8);
+				out.innerHTML=''; if(matches.length===0){ out.textContent='No users found'; out.style.display='block'; return; }
+				for(const m of matches){
+					const row = document.createElement('div'); row.style.display='flex'; row.style.justifyContent='space-between'; row.style.alignItems='center'; row.style.padding='6px 4px';
+					const name = document.createElement('div'); name.textContent=m; name.style.fontWeight='600';
+					const btn = document.createElement('button'); btn.textContent='Send Request'; btn.className='btn'; btn.style.padding='6px 8px';
+					btn.addEventListener('click', ()=>{
+						if(!currentUser){ alert('Sign in first'); return; }
+						const ok = sendFriendRequest(currentUser, m);
+						if(ok){ alert('Friend request sent'); out.style.display='none'; renderFriendRequests(); }
+						else { alert('Could not send request (maybe already requested or user missing/self)'); }
+					});
+					row.appendChild(name); row.appendChild(btn); out.appendChild(row);
+				}
+				out.style.display='block';
+			});
+
+			renderFriends();
+			renderFriendRequests();
+			// respond to presence requests
+			setInterval(()=>{ // cleanup presence older than 30s
+				const p = JSON.parse(localStorage.getItem('neo_presence')||'{}');
+				const now = Date.now();
+				for(const [u,ts] of Object.entries(p)){ if(now - ts > 30000) delete p[u]; }
+				localStorage.setItem('neo_presence', JSON.stringify(p)); renderPresence();
+			},10000);
+		})();
+
+		// handle manual storage-driven sync on load
+		window.addEventListener('load', ()=>{
+			renderMessages().catch(()=>{}); renderPresence();
+		});
+	</script>
+</body>
+</html>
+
